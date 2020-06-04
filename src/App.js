@@ -1,4 +1,5 @@
 import React, { useReducer, useMemo, createContext } from 'react';
+import produce from 'immer';
 import './App.css';
 import CreateUser from './components/CreateUser';
 import UserList from './components/UserList';
@@ -33,22 +34,34 @@ const initialState = {
 const reducer = (state, action) => {
   switch (action.type) {
     case 'CREATE_USER':
-      return {
-        ...state,
-        users: [...state.users, action.user],
-      };
+      return produce(state, (draftState) => {
+        draftState.users.push(action.user);
+      });
+    // return {
+    //   ...state,
+    //   users: [...state.users, action.user],
+    // };
     case 'TOGGLE_USER':
-      return {
-        ...state,
-        users: state.users.map((user) =>
-          user.id === action.id ? { ...user, active: !user.active } : user
-        ),
-      };
+      return produce(state, (draftState) => {
+        draftState.users.forEach((user) => {
+          if (user.id === action.id) user.active = !user.active;
+        });
+      });
+    // return {
+    //   ...state,
+    //   users: state.users.map((user) =>
+    //     user.id === action.id ? { ...user, active: !user.active } : user
+    //   ),
+    // };
     case 'REMOVE_USER':
-      return {
-        ...state,
-        users: state.users.filter((user) => user.id !== action.id),
-      };
+      return produce(state, (draftState) => {
+        const idx = draftState.users.findIndex((user) => user.id === action.id);
+        draftState.users.splice(idx, 1);
+      });
+    // return {
+    //   ...state,
+    //   users: state.users.filter((user) => user.id !== action.id),
+    // };
     default:
       throw new Error('Unhandled action');
   }
